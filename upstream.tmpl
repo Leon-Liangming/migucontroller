@@ -1,0 +1,6 @@
+{{range $name, $upstream := .upstreams}}
+upstream {{$upstream.UpstreamName}} {
+    {{ range $server := $upstream.Endpoints }}server {{ $server.Address }}:{{ $server.Port }} max_fails=2 fail_timeout=10;
+    {{ end }}
+}
+{{ end }}
