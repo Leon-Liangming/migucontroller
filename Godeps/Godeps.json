@@ -1,7 +1,7 @@
 {
 	"ImportPath": "migucontroller",
 	"GoVersion": "go1.7",
-	"GodepVersion": "v75",
+	"GodepVersion": "v79",
 	"Deps": [
 		{
 			"ImportPath": "cloud.google.com/go/compute/metadata",
