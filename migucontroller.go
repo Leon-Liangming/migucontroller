@@ -40,8 +40,9 @@ var (
 	resyncPeriod = flags.Duration("sync-period", 30*time.Second,
 		`Relist and confirm cloud resources this often.`)
 
-	nginxTemplate = flags.String("nginx-template", "./upstream.tmpl", "nginx config template file.")
-	configPath = flags.String("config-path", "./upstream.conf", "nginx config file.")
+	nginxTemplate      = flags.String("nginx-template", "./upstream.tmpl", "nginx config template file.")
+	upstreamConfigPath = flags.String("upstream-config-path", "./upstream.conf", "nginx upstream config file.")
+	nginxConfigPath    = flags.String("nginx-config-path", "./nginx.conf", "nginx config file.")
 )
 
 func main() {
@@ -83,7 +84,7 @@ func main() {
 	//
 	//glog.Infof("Success! %v", pod)
 
-	miguController := controller.NewController(kubeClient, *serviceLabels, *watchNamespace, *resyncPeriod, *nginxTemplate, *configPath)
+	miguController := controller.NewController(kubeClient, *serviceLabels, *watchNamespace, *resyncPeriod, *nginxTemplate, *upstreamConfigPath, *nginxConfigPath)
 	go handleSigterm(miguController)
 
 	miguController.Run()

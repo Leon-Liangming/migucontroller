@@ -91,9 +91,10 @@ type Controller struct {
 	reloadLock *sync.Mutex
 
 	// template loaded ready to be used to generate the nginx configuration file
-	template *Template
-	ConfigFile string
-	TempPath   string
+	template           *Template
+	UpstreamConfigFile string
+	NginxConfigFile    string
+	TempPath           string
 	// stopLock is used to enforce only a single call to Stop is active.
 	// Needed because we allow stopping through an http endpoint and
 	// allowing concurrent stoppers leads to stack traces.
@@ -102,7 +103,7 @@ type Controller struct {
 	stopCh   chan struct{}
 }
 
-func NewController(kubeClient *clientset.Clientset,  serviceLabels, namespace string, resyncPeriod time.Duration, nginxTemplate string, configPath string) *Controller {
+func NewController(kubeClient *clientset.Clientset,  serviceLabels, namespace string, resyncPeriod time.Duration, nginxTemplate, upstreamConfigfile, nginxConfigfile string) *Controller {
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(glog.Infof)
 	eventBroadcaster.StartRecordingToSink(&unversionedcore.EventSinkImpl{Interface: kubeClient.Core().Events(namespace)})
@@ -119,11 +120,12 @@ func NewController(kubeClient *clientset.Clientset,  serviceLabels, namespace st
 		recorder: 		eventBroadcaster.NewRecorder(api.EventSource{
 			Component: "nginx-ingress-controller",
 		}),
-		svcSelector: 		svcSelector,
-		reloadRateLimiter: 	flowcontrol.NewTokenBucketRateLimiter(0.1, 1),
-		reloadLock:        	&sync.Mutex{},
-		TempPath:		nginxTemplate,
-		ConfigFile:		configPath,
+		svcSelector:        svcSelector,
+		reloadRateLimiter:  flowcontrol.NewTokenBucketRateLimiter(0.1, 1),
+		reloadLock:         &sync.Mutex{},
+		TempPath:           nginxTemplate,
+		UpstreamConfigFile: upstreamConfigfile,
+		NginxConfigFile:    nginxConfigfile,
 	}
 
 	controller.syncQueue = taskqueue.NewTaskQueue(controller.Sync)
@@ -220,7 +222,7 @@ func (controller *Controller) Sync(key string) error {
 	controller.reloadLock.Lock()
 	defer controller.reloadLock.Unlock()
 
-	glog.Infof("Sync nginx config file...")
+	glog.V(3).Infof("Sync nginx config file...")
 	//svcList, err := controller.getAllSpecifyServices()
 	//if err != nil {
 	//	glog.Errorf("get all services failed. %v", err)
@@ -229,7 +231,7 @@ func (controller *Controller) Sync(key string) error {
 	ings := controller.ingLister.Store.List()
 
 	upstreams := controller.TransferToUpstream(ings)
-	glog.Infof("Success get upsteams %v", len(upstreams))
+	glog.V(3).Infof("Success get upsteams %v", len(upstreams))
 
 	newCfg, err := controller.template.Write(upstreams)
 	if err != nil {
@@ -240,17 +242,18 @@ func (controller *Controller) Sync(key string) error {
 	if err != nil {
 		glog.Errorf("reload nginx config file failed. %v", err)
 		// 清除配置文件，保证下次能够重新reload
-		os.Rename(controller.ConfigFile, controller.ConfigFile + "-failed")
+		os.Rename(controller.UpstreamConfigFile, controller.UpstreamConfigFile+ "-failed")
 		return err
 	}
 
 	if changed {
-		if err := controller.shellOut("nginx -s reload"); err == nil {
+		cmd := fmt.Sprintf("nginx -s reload -c %v", controller.NginxConfigFile)
+		if err := controller.shellOut(cmd); err == nil {
 			glog.Info("change in configuration detected. Reloading...")
 		} else {
 			glog.Errorf("nginx reload failed. %v", err)
 			// 清除配置文件，保证下次能够重新reload
-			os.Rename(controller.ConfigFile, controller.ConfigFile + "-failed")
+			os.Rename(controller.UpstreamConfigFile, controller.UpstreamConfigFile+ "-failed")
 			return err
 		}
 	}
@@ -331,7 +334,7 @@ func (controller *Controller) getAllSpecifyServices() ([]*api.Service, error) {
 }
 
 func (controller *Controller) needsReload(data []byte) (bool, error) {
-	filename := controller.ConfigFile
+	filename := controller.UpstreamConfigFile
 	_, err := os.Stat(filename)
 	//if err != nil {
 	//	glog.Errorf("file stat failed. %v", err)

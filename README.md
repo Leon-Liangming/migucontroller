@@ -16,9 +16,13 @@
 * watch-namespace：可以设置需要关注的namespace，默认为监听所有namespace的数据，可以设置只关注某个namespace。
 * sync-period：数据同步周期，默认30s。controller中缓存了service，endpoint等信息，该配置项设置的是在没有数据变化的情况下，同步数据的周期。如果有数据变化，会第一时间更新。
 * nginx-template：nginx配置文件模板路径，默认为当前目录。
-* config-path：nginx upstream配置文件输出目录，输出刷新之后的upstream配置文件。
+* upstream-config-path：nginx upstream配置文件输出目录，输出刷新之后的upstream配置文件。
+* nginx-config-path: nginx 配置文件路径，用于nginx reload动作正常运行。
 * alsologtostderr：是否输出调试日志。
 
 **1、命令启动样例**
 ---------------------
-`./migucontroller  --kube-apiserver-ip=172.25.43.199 --kube-apiserver-port=5443  --access-key=ICW82J1S25XHN2UJKXKM  --secret-key=5PPFWFVY2UKLYKV0GT3DQA7HVJ7N8ZCSODIR2YBP --iam-sersver-address=172.25.43.198:31943  --alsologtostderr=true`
+* 启动前migucontroller前，需要将nginx二进制可执行文件所在的目录加入到PATH中，能够被用户直接使用。
+ 比如：PATH=$PATH:/home/abservice/ab/tengine/sbin
+* 启动命令样例如下：
+`./migucontroller  --kube-apiserver-ip=172.25.43.199 --kube-apiserver-port=5443  --access-key=ICW82J1S25XHN2UJKXKM  --secret-key=5PPFWFVY2UKLYKV0GT3DQA7HVJ7N8ZCSODIR2YBP --iam-sersver-address=172.25.43.198:31943  --alsologtostderr=true --nginx-config-path=/home/abservice/ab/egsb-server/conf/nginx.conf`
