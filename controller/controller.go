@@ -3,7 +3,6 @@ package controller
 import (
 	"sync"
 	"reflect"
-	"strings"
 
 	"migucontroller/controller/taskqueue"
 	"github.com/golang/glog"
@@ -15,9 +14,7 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/watch"
 	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
-	"k8s.io/kubernetes/pkg/selection"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 
 	"time"
@@ -74,8 +71,6 @@ type StoreToIngressLister struct {
 
 type Controller struct {
 	client *clientset.Clientset
-	svcSelector labels.Selector
-
 	ingController  *cache.Controller
 	endpController *cache.Controller
 	svcController  *cache.Controller
@@ -103,16 +98,10 @@ type Controller struct {
 	stopCh   chan struct{}
 }
 
-func NewController(kubeClient *clientset.Clientset,  serviceLabels, namespace string, resyncPeriod time.Duration, nginxTemplate, upstreamConfigfile, nginxConfigfile string) *Controller {
+func NewController(kubeClient *clientset.Clientset, namespace string, resyncPeriod time.Duration, nginxTemplate, upstreamConfigfile, nginxConfigfile string) *Controller {
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(glog.Infof)
 	eventBroadcaster.StartRecordingToSink(&unversionedcore.EventSinkImpl{Interface: kubeClient.Core().Events(namespace)})
-
-	svcSelector,err :=  parserServiceLabels(serviceLabels)
-	if err != nil {
-		glog.Errorf("Parser service labels failed. %v", err)
-		return nil
-	}
 
 	controller := &Controller{
 		client:			kubeClient,
@@ -120,7 +109,6 @@ func NewController(kubeClient *clientset.Clientset,  serviceLabels, namespace st
 		recorder: 		eventBroadcaster.NewRecorder(api.EventSource{
 			Component: "nginx-ingress-controller",
 		}),
-		svcSelector:        svcSelector,
 		reloadRateLimiter:  flowcontrol.NewTokenBucketRateLimiter(0.1, 1),
 		reloadLock:         &sync.Mutex{},
 		TempPath:           nginxTemplate,
@@ -223,11 +211,6 @@ func (controller *Controller) Sync(key string) error {
 	defer controller.reloadLock.Unlock()
 
 	glog.V(3).Infof("Sync nginx config file...")
-	//svcList, err := controller.getAllSpecifyServices()
-	//if err != nil {
-	//	glog.Errorf("get all services failed. %v", err)
-	//	return err
-	//}
 	ings := controller.ingLister.Store.List()
 
 	upstreams := controller.TransferToUpstream(ings)
@@ -297,40 +280,6 @@ func (controller *Controller) Stop() error {
 func (controller *Controller) ControllersInSync() bool {
 	return controller.svcController.HasSynced() &&
 		controller.endpController.HasSynced()
-}
-
-func parserServiceLabels(serviceLabels string) (labels.Selector, error) {
-	serviceLabels = strings.Replace(serviceLabels, " ", "", -1)
-	singleLabels := strings.Split(serviceLabels, ",")
-
-	selector := labels.NewSelector()
-	for _, singleLabel := range singleLabels {
-		data := strings.Split(singleLabel, "=")
-		key := data[0]
-		value := []string{}
-		value = append(value, data[1])
-		req, err := labels.NewRequirement(key, selection.Equals, value)
-		if err != nil {
-			glog.Errorf("Set label failed, %v, %v", singleLabel, err)
-			continue
-		}
-
-		selector = selector.Add(*req)
-	}
-
-	glog.Infof("Get Service Labels's Requirement Success, %v", selector.String())
-	return selector, nil
-}
-
-func (controller *Controller) getAllSpecifyServices() ([]*api.Service, error) {
-
-	svcList, err := controller.svcLister.List(controller.svcSelector)
-	if err != nil {
-		glog.Errorf("Get %v services failed.", controller.svcSelector.String())
-		return svcList, err
-	}
-
-	return svcList, nil
 }
 
 func (controller *Controller) needsReload(data []byte) (bool, error) {

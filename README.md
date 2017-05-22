@@ -29,8 +29,9 @@
 
 **3、编译部署方式**
 ---------------------
-
-
+* 使用build/build.sh编译，得到migucontroller.tar.gz
+* 将migucontroller.tar.gz上传到对应主机，使用deploy/install.sh部署
+* 部署完成后，参考命令启动样例以及配置参数说明，启动migucontroller
 
 **3、常见问题**
 ---------------------

@@ -25,8 +25,6 @@ import (
 var (
 	flags = pflag.NewFlagSet("", pflag.ExitOnError)
 
-	serviceLabels = flags.String("service-labels","app=egsb",`Get specific services'endpoints to reload nginx config file by service's label.
-	support multi labels, example (key1=label1,key2=label2,key3=label3). serviceLabels is AND of all labels.`)
 	accessKey = flags.String("access-key", "", `request to kubernetes apiserver's accesskey.`)
 	secretKey = flags.String("secret-key", "", `request to kubernetes apiserver's secretkey.`)
 	tokenNamespace = flags.String("token-namespace", "op_svc_cfe", "get which namespace's token.")
@@ -76,15 +74,8 @@ func main() {
 	if err != nil {
 		glog.Fatalf("Invalid API configuration: %v", err)
 	}
-	//opts := api.ListOptions{}
-	//pod, _ := kubeClient.Pods("kube-system").List(opts)
-	//if pod == nil {
-	//	glog.Fatalf("Can't get pod info: %v", err)
-	//}
-	//
-	//glog.Infof("Success! %v", pod)
 
-	miguController := controller.NewController(kubeClient, *serviceLabels, *watchNamespace, *resyncPeriod, *nginxTemplate, *upstreamConfigPath, *nginxConfigPath)
+	miguController := controller.NewController(kubeClient, *watchNamespace, *resyncPeriod, *nginxTemplate, *upstreamConfigPath, *nginxConfigPath)
 	go handleSigterm(miguController)
 
 	miguController.Run()

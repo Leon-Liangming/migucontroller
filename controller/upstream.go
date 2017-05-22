@@ -110,29 +110,6 @@ func (controller *Controller) NewUpstream(name string) *Upstream {
 	}
 }
 
-//func (controller *Controller) NewUpstream(svc *api.Service) []Upstream {
-//	var upstreams []Upstream
-//	for _, servicePort := range svc.Spec.Ports {
-//		// targetPort could be a string, use the name or the port (int)
-//		endps, err := controller.getEndpoints(svc, servicePort.TargetPort, api.ProtocolTCP)
-//		if err != nil {
-//			glog.Errorf("get service %v's %v endpoint failed. %v", svc, servicePort.TargetPort.String(), err)
-//			continue
-//		}
-//		if len(endps) == 0 {
-//			glog.Warningf("service %v %v does not have any active endpoints", svc.Name, svc.Namespace)
-//			continue
-//		}
-//
-//		var upstream Upstream
-//		upstream.UpstreamName = fmt.Sprintf("%v-%v-%v", svc.Name, svc.Namespace, servicePort.Port)
-//		upstream.Endpoints = endps
-//
-//		upstreams = append(upstreams, upstream)
-//	}
-//	return upstreams
-//}
-
 func  (controller *Controller) getEndpoints (
 	s *api.Service,
 	servicePort intstr.IntOrString,
