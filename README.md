@@ -20,9 +20,19 @@
 * nginx-config-path: nginx 配置文件路径，用于nginx reload动作正常运行。
 * alsologtostderr：是否输出调试日志。
 
-**1、命令启动样例**
+**2、命令启动样例**
 ---------------------
 * 启动前migucontroller前，需要将nginx二进制可执行文件所在的目录加入到PATH中，能够被用户直接使用。
  比如：PATH=$PATH:/home/abservice/ab/tengine/sbin
 * 启动命令样例如下：
 `./migucontroller  --kube-apiserver-ip=172.25.43.199 --kube-apiserver-port=5443  --access-key=ICW82J1S25XHN2UJKXKM  --secret-key=5PPFWFVY2UKLYKV0GT3DQA7HVJ7N8ZCSODIR2YBP --iam-sersver-address=172.25.43.198:31943  --alsologtostderr=true --nginx-config-path=/home/abservice/ab/egsb-server/conf/nginx.conf`
+
+**3、编译部署方式**
+---------------------
+
+
+
+**3、常见问题**
+---------------------
+* nginx reload失败，这个是由于nginx没有被配置到PATH中。 
+failed to execute nginx -s reload -c /home/abservice/ab/egsb-server/conf/nginx.conf: sh: nginx: command not found
