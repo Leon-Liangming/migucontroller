@@ -29,6 +29,8 @@
 
 **4、编译部署方式**
 --------------------- 
+* 前置条件，请在编译环境中安装golang 1.7.4版本，并按照指导安装设置好环境变量。https://golang.org/dl/
+* 安装godep，https://github.com/tools/godep
 * 使用build/build.sh编译，得到migucontroller.tar.gz
 * 将migucontroller.tar.gz上传到对应主机，使用deploy/install.sh部署
 * 部署完成后，参考命令启动样例以及配置参数说明，启动migucontroller
