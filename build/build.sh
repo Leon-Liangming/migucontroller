@@ -10,7 +10,7 @@ rm -rf paas-controller
 rm migucontroller.tar.gz
 
 mkdir -p paas-controller
-cp migucontroller ca.crt upstream.tmpl ./deploy/install.sh ./paas-controller
+cp migucontroller ca.crt upstream.tmpl ./deploy/install.sh ./deploy/start.sh ./paas-controller
 
 tar zcf migucontroller.tar.gz ./paas-controller
 
