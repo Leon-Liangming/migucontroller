@@ -28,7 +28,7 @@
 `./migucontroller  --kube-apiserver-ip=172.25.43.199 --kube-apiserver-port=5443  --access-key=ICW82J1S25XHN2UJKXKM  --secret-key=5PPFWFVY2UKLYKV0GT3DQA7HVJ7N8ZCSODIR2YBP --iam-sersver-address=172.25.43.198:31943  --alsologtostderr=true --nginx-config-path=/home/abservice/ab/egsb-server/conf/nginx.conf`
 
 **4、编译部署方式**
----------------------
+--------------------- 
 * 使用build/build.sh编译，得到migucontroller.tar.gz
 * 将migucontroller.tar.gz上传到对应主机，使用deploy/install.sh部署
 * 部署完成后，参考命令启动样例以及配置参数说明，启动migucontroller

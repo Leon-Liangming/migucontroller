@@ -13,11 +13,22 @@ import (
 
 	"reflect"
 	"encoding/json"
+	"sort"
 )
 
 type Upstream struct {
 	UpstreamName string
 	Endpoints    []EndpointInfo
+}
+
+
+// ServerByName sorts server by name
+type UpstreamByName []Upstream
+
+func (c UpstreamByName) Len() int      { return len(c) }
+func (c UpstreamByName) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
+func (c UpstreamByName) Less(i, j int) bool {
+	return c[i].UpstreamName < c[j].UpstreamName
 }
 
 type EndpointInfo struct {
@@ -37,7 +48,7 @@ func (controller *Controller) TransferToUpstream(ings []interface{}) []Upstream 
 				continue
 			}
 			for _, path := range rule.HTTP.Paths {
-				name := fmt.Sprintf("%v-%v-%v", path.Backend.ServiceName, ing.GetNamespace(), path.Backend.ServicePort.String())
+				name := fmt.Sprintf("%v_%v_%v", path.Backend.ServiceName, ing.GetNamespace(), path.Backend.ServicePort.String())
 				if _, ok := upstreams[name]; ok {
 					continue
 				}
@@ -61,6 +72,9 @@ func (controller *Controller) TransferToUpstream(ings []interface{}) []Upstream 
 	for _, up := range upstreams {
 		upstreamArray = append(upstreamArray, *up)
 	}
+
+	//排序
+	sort.Sort(UpstreamByName(upstreamArray))
 	return upstreamArray
 }
 
