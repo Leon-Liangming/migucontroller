@@ -90,6 +90,7 @@ type Controller struct {
 	UpstreamConfigFile string
 	NginxConfigFile    string
 	TempPath           string
+	WatchAppName	   string
 	// stopLock is used to enforce only a single call to Stop is active.
 	// Needed because we allow stopping through an http endpoint and
 	// allowing concurrent stoppers leads to stack traces.
@@ -98,7 +99,12 @@ type Controller struct {
 	stopCh   chan struct{}
 }
 
-func NewController(kubeClient *clientset.Clientset, namespace string, resyncPeriod time.Duration, nginxTemplate, upstreamConfigfile, nginxConfigfile string) *Controller {
+func NewController(
+	kubeClient *clientset.Clientset,
+	namespace string,
+	resyncPeriod time.Duration,
+	nginxTemplate, upstreamConfigfile, nginxConfigfile, watchAppName string,
+) *Controller {
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(glog.Infof)
 	eventBroadcaster.StartRecordingToSink(&unversionedcore.EventSinkImpl{Interface: kubeClient.Core().Events(namespace)})
@@ -114,6 +120,7 @@ func NewController(kubeClient *clientset.Clientset, namespace string, resyncPeri
 		TempPath:           nginxTemplate,
 		UpstreamConfigFile: upstreamConfigfile,
 		NginxConfigFile:    nginxConfigfile,
+		WatchAppName:	    watchAppName,
 	}
 
 	controller.syncQueue = taskqueue.NewTaskQueue(controller.Sync)

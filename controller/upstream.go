@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"encoding/json"
 	"sort"
+	"strings"
 )
 
 type Upstream struct {
@@ -42,6 +43,10 @@ func (controller *Controller) TransferToUpstream(ings []interface{}) []Upstream 
 	upstreams := make(map[string]*Upstream)
 	for _, ingIf := range ings {
 		ing := ingIf.(*extensions.Ingress)
+		if controller.WatchAppName != "" &&
+			!strings.Contains(ing.Name, controller.WatchAppName) {
+			continue
+		}
 
 		for _, rule := range ing.Spec.Rules {
 			if rule.IngressRuleValue.HTTP == nil {
