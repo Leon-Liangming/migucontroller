@@ -43,10 +43,12 @@ func (controller *Controller) TransferToUpstream(ings []interface{}) []Upstream 
 	upstreams := make(map[string]*Upstream)
 	for _, ingIf := range ings {
 		ing := ingIf.(*extensions.Ingress)
-		if controller.WatchAppName != "" &&
-			!strings.Contains(ing.Name, controller.WatchAppName) {
+		if controller.WatchName != "" &&
+			!strings.Contains(ing.Name, controller.WatchName) {
+			glog.V(2).Infof("not matched watch app name %v, skip ingress %v/%v ", controller.WatchName, ing.Namespace, ing.Name)
 			continue
 		}
+		glog.V(2).Infof("get ingress %v/%v", ing.Namespace, ing.Name)
 
 		for _, rule := range ing.Spec.Rules {
 			if rule.IngressRuleValue.HTTP == nil {

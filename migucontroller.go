@@ -41,7 +41,7 @@ var (
 	nginxTemplate      = flags.String("nginx-template", "./upstream.tmpl", "nginx config template file.")
 	upstreamConfigPath = flags.String("upstream-config-path", "./upstream.conf", "nginx upstream config file.")
 	nginxConfigPath    = flags.String("nginx-config-path", "./nginx.conf", "nginx config file.")
-	watchAppName       = flags.String("watch-app-name", "", "watch app name, which matched(contained) ingress's name will refresh to upstream config.")
+	watchName 	   = flags.String("watch-name", "", "watch name, which matched(contained) ingress's name will refresh to upstream config.")
 )
 
 func main() {
@@ -77,7 +77,7 @@ func main() {
 	}
 
 	miguController := controller.NewController(kubeClient, *watchNamespace,
-		*resyncPeriod, *nginxTemplate, *upstreamConfigPath, *nginxConfigPath, *watchAppName)
+		*resyncPeriod, *nginxTemplate, *upstreamConfigPath, *nginxConfigPath, *watchName)
 	go handleSigterm(miguController)
 
 	miguController.Run()

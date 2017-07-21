@@ -72,31 +72,31 @@ type StoreToIngressLister struct {
 type Controller struct {
 	client *clientset.Clientset
 	ingController  *cache.Controller
-	endpController *cache.Controller
-	svcController  *cache.Controller
+	endpController     *cache.Controller
+	svcController      *cache.Controller
 
-	ingLister  StoreToIngressLister
-	endpLister cache.StoreToEndpointsLister
-	svcLister  cache.StoreToServiceLister
+	ingLister          StoreToIngressLister
+	endpLister         cache.StoreToEndpointsLister
+	svcLister          cache.StoreToServiceLister
 
-	recorder record.EventRecorder
-	syncQueue *taskqueue.TaskQueue
+	recorder           record.EventRecorder
+	syncQueue          *taskqueue.TaskQueue
 
-	reloadRateLimiter flowcontrol.RateLimiter
-	reloadLock *sync.Mutex
+	reloadRateLimiter  flowcontrol.RateLimiter
+	reloadLock         *sync.Mutex
 
 	// template loaded ready to be used to generate the nginx configuration file
 	template           *Template
 	UpstreamConfigFile string
 	NginxConfigFile    string
 	TempPath           string
-	WatchAppName	   string
+	WatchName          string
 	// stopLock is used to enforce only a single call to Stop is active.
 	// Needed because we allow stopping through an http endpoint and
 	// allowing concurrent stoppers leads to stack traces.
-	stopLock sync.Mutex
-	shutdown bool
-	stopCh   chan struct{}
+	stopLock           sync.Mutex
+	shutdown           bool
+	stopCh             chan struct{}
 }
 
 func NewController(
@@ -120,7 +120,7 @@ func NewController(
 		TempPath:           nginxTemplate,
 		UpstreamConfigFile: upstreamConfigfile,
 		NginxConfigFile:    nginxConfigfile,
-		WatchAppName:	    watchAppName,
+		WatchName:	    watchAppName,
 	}
 
 	controller.syncQueue = taskqueue.NewTaskQueue(controller.Sync)

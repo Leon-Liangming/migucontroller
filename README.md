@@ -18,7 +18,7 @@
 * nginx-template：nginx配置文件模板路径，默认为当前目录。
 * upstream-config-path：nginx upstream配置文件输出目录，输出刷新之后的upstream配置文件。
 * nginx-config-path: nginx 配置文件路径，用于nginx reload动作正常运行。
-* watch-app-name: 关注业务名称，默认为空，关注所有业务的数据刷新。配置后，只关注应用名包含该配置值的应用的数据刷新。
+* watch-name: 关注业务名称，默认为空，关注所有业务的数据刷新。配置后，只关注ingress服务发布名包含该配置值的服务数据刷新。
 * alsologtostderr：是否输出调试日志。
 
 **3、命令启动样例**
